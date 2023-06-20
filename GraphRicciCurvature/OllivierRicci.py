@@ -307,7 +307,7 @@ def _compute_ricci_curvature_single_edge(source, target):
     Returns
     -------
     result : dict[(int,int), float]
-        The Ricci curvature of given edge in dict format. E.g.: {(node1, node2): ricciCurvature}
+        The Ricci curvature of given edge in dict format. E.g.: {(node1, node2): ollivier}
 
     """
     # logger.debug("EDGE:%s,%s"%(source,target))
@@ -400,7 +400,7 @@ def _compute_ricci_curvature_edges(G: nx.Graph, weight="weight", edge_list=[],
     Returns
     -------
     output : dict[(int,int), float]
-        A dictionary of edge Ricci curvature. E.g.: {(node1, node2): ricciCurvature}.
+        A dictionary of edge Ricci curvature. E.g.: {(node1, node2): ollivier}.
 
     """
 
@@ -497,26 +497,26 @@ def _compute_ricci_curvature(G: nx.Graph, weight="weight", **kwargs):
     Returns
     -------
     G: NetworkX graph
-        A NetworkX graph with "ricciCurvature" on nodes and edges.
+        A NetworkX graph with "ollivier" on nodes and edges.
     """
 
     # compute Ricci curvature for all edges
     edge_ricci = _compute_ricci_curvature_edges(G, weight=weight, **kwargs)
 
     # Assign edge Ricci curvature from result to graph G
-    nx.set_edge_attributes(G, edge_ricci, "ricciCurvature")
+    nx.set_edge_attributes(G, edge_ricci, "ollivier")
 
     # Compute node Ricci curvature
     for n in G.nodes():
         rc_sum = 0  # sum of the neighbor Ricci curvature
         if G.degree(n) != 0:
             for nbr in G.neighbors(n):
-                if 'ricciCurvature' in G[n][nbr]:
-                    rc_sum += G[n][nbr]['ricciCurvature']
+                if 'ollivier' in G[n][nbr]:
+                    rc_sum += G[n][nbr]['ollivier']
 
             # Assign the node Ricci curvature to be the average of node's adjacency edges
-            G.nodes[n]['ricciCurvature'] = rc_sum / G.degree(n)
-            logger.debug("node %s, Ricci Curvature = %f" % (n, G.nodes[n]['ricciCurvature']))
+            G.nodes[n]['ollivier'] = rc_sum / G.degree(n)
+            logger.debug("node %s, Ricci Curvature = %f" % (n, G.nodes[n]['ollivier']))
 
     return G
 
@@ -566,11 +566,11 @@ def _compute_ricci_flow(G: nx.Graph, weight="weight",
     if nx.get_edge_attributes(G, "original_RC"):
         logger.info("original_RC detected, continue to refine the ricci flow.")
     else:
-        logger.info("No ricciCurvature detected, compute original_RC...")
+        logger.info("No ollivier detected, compute original_RC...")
         _compute_ricci_curvature(G, weight=weight, **kwargs)
 
         for (v1, v2) in G.edges():
-            G[v1][v2]["original_RC"] = G[v1][v2]["ricciCurvature"]
+            G[v1][v2]["original_RC"] = G[v1][v2]["ollivier"]
 
         # clear the APSP since the graph have changed.
         _apsp = {}
@@ -578,7 +578,7 @@ def _compute_ricci_flow(G: nx.Graph, weight="weight",
     # Start the Ricci flow process
     for i in range(iterations):
         for (v1, v2) in G.edges():
-            G[v1][v2][weight] -= step * (G[v1][v2]["ricciCurvature"]) * G[v1][v2][weight]
+            G[v1][v2][weight] -= step * (G[v1][v2]["ollivier"]) * G[v1][v2][weight]
 
         # Do normalization on all weight to prevent weight expand to infinity
         w = nx.get_edge_attributes(G, weight)
@@ -590,7 +590,7 @@ def _compute_ricci_flow(G: nx.Graph, weight="weight",
 
         _compute_ricci_curvature(G, weight=weight, **kwargs)
 
-        rc = nx.get_edge_attributes(G, "ricciCurvature")
+        rc = nx.get_edge_attributes(G, "ollivier")
         diff = max(rc.values()) - min(rc.values())
 
         logger.trace("Ricci curvature difference: %f" % diff)
@@ -729,7 +729,7 @@ class OllivierRicci:
         Returns
         -------
         output : dict[(int,int), float]
-            A dictionary of edge Ricci curvature. E.g.: {(node1, node2): ricciCurvature}.
+            A dictionary of edge Ricci curvature. E.g.: {(node1, node2): ollivier}.
         """
         return _compute_ricci_curvature_edges(G=self.G, weight=self.weight, edge_list=edge_list,
                                               alpha=self.alpha, method=self.method,
@@ -745,7 +745,7 @@ class OllivierRicci:
         Returns
         -------
         G: NetworkX graph
-            A NetworkX graph with "ricciCurvature" on nodes and edges.
+            A NetworkX graph with "ollivier" on nodes and edges.
 
         Examples
         --------
@@ -755,7 +755,7 @@ class OllivierRicci:
             >>> orc = OllivierRicci(G, alpha=0.5, verbose="INFO")
             >>> orc.compute_ricci_curvature()
             >>> orc.G[0][1]
-            {'weight': 1.0, 'ricciCurvature': 0.11111111071683011}
+            {'weight': 1.0, 'ollivier': 0.11111111071683011}
         """
 
         self.G = _compute_ricci_curvature(G=self.G, weight=self.weight,
@@ -795,7 +795,7 @@ class OllivierRicci:
             >>> orc_OTD.compute_ricci_flow(iterations=10)
             >>> orc_OTD.G[0][1]
             {'weight': 0.06399135316908759,
-             'ricciCurvature': 0.18608249978652802,
+             'ollivier': 0.18608249978652802,
              'original_RC': 0.11111111071683011}
         """
         self.G = _compute_ricci_flow(G=self.G, weight=self.weight,
