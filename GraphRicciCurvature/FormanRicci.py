@@ -434,7 +434,7 @@ def _compute_ricci_curvature_single_edge(source, target):
 
     result = 1  # assign an initial cost
 
-    assert _method in ["1d", "augmented", "augmented-quad"], \
+    assert _method in ["1d", "augmented", "augmented-quad"],
 
         'Method %s not found, support method:["1d", "augmented", "augmented-quad"]' % _method
 
